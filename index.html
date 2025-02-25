@@ -3,21 +3,404 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chemistry Video Lecture Playlist Selector</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <title>Chemistry YouTube Video Viewer</title>
+    <style>
+        :root {
+            --primary-color: #9b59b6;
+            --secondary-color: #8e44ad;
+            --accent-color: #e74c3c;
+            --dark-color: #6c3483;
+            --light-color: #f4ecf7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            flex: 1;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        select {
+            background-color: white;
+        }
+
+        .option-available {
+            font-weight: bold;
+        }
+
+        .option-unavailable {
+            color: #aaa;
+            filter: blur(0.5px);
+            cursor: not-allowed;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--dark-color);
+        }
+
+        #videoContainer {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+
+        .video-details {
+            margin-top: 20px;
+        }
+
+        .upgrade-message {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .upgrade-message button {
+            background-color: white;
+            color: var(--accent-color);
+            margin-top: 10px;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .error {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+        }
+
+        .success {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
+    <header>
+        <h1>Chemistry YouTube Viewer</h1>
+        <p>Watch educational Chemistry videos</p>
+    </header>
+
     <div class="container">
-        <h2>Chemistry Video Lecture Playlist Selector</h2>
-        <select id="topicSelector">
-            <option value="">Select a Chemistry Topic</option>
-            <option value="OrganicChemistry">Organic Chemistry</option>
-            <option value="InorganicChemistry">Inorganic Chemistry</option>
-            <option value="PhysicalChemistry">Physical Chemistry</option>
-        </select>
-        <button id="goButton" disabled>Go to Video Playlist</button>
+        <div class="form-group">
+            <label for="topicSelect">Select Chemistry Topic:</label>
+            <select id="topicSelect">
+                <option value="" disabled selected>-- Select a topic --</option>
+                <option value="organic" class="option-available">Organic Chemistry</option>
+                <option value="inorganic" class="option-available">Inorganic Chemistry</option>
+                <option value="physical" class="option-available">Physical Chemistry</option>
+                <option value="analytical" class="option-unavailable">Analytical Chemistry</option>
+                <option value="biochemistry" class="option-unavailable">Biochemistry</option>
+                <option value="polymer" class="option-unavailable">Polymer Chemistry</option>
+                <option value="medicinal" class="option-unavailable">Medicinal Chemistry</option>
+                <option value="nuclear" class="option-unavailable">Nuclear Chemistry</option>
+                <option value="environmental" class="option-unavailable">Environmental Chemistry</option>
+                <option value="computational" class="option-unavailable">Computational Chemistry</option>
+            </select>
+        </div>
+
+        <div id="inputContainer" style="display: none;">
+            <div class="form-group">
+                <label for="videoUrl">Enter YouTube Video URL:</label>
+                <input type="text" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." />
+            </div>
+            <button id="loadVideo">Load Video</button>
+        </div>
+
+        <div id="upgradeMessage" class="upgrade-message">
+            <p>UPGRADE TO PRO to access this topic!</p>
+            <button id="dismissUpgrade">Dismiss</button>
+        </div>
+
+        <div id="messageContainer" class="message" style="display: none;"></div>
+
+        <div id="videoContainer">
+            <h2 id="videoTitle"></h2>
+            <div class="video-wrapper">
+                <iframe id="videoFrame" allowfullscreen></iframe>
+            </div>
+            <div class="video-details">
+                <p id="videoDescription"></p>
+            </div>
+        </div>
     </div>
-    <script src="script.js"></script>
+
+    <footer>
+        <p>&copy; 2025 Chemistry YouTube Viewer | Educational Purposes Only</p>
+    </footer>
+
+    <script>
+        // DOM elements
+        const topicSelect = document.getElementById('topicSelect');
+        const inputContainer = document.getElementById('inputContainer');
+        const videoUrlInput = document.getElementById('videoUrl');
+        const loadVideoBtn = document.getElementById('loadVideo');
+        const upgradeMessage = document.getElementById('upgradeMessage');
+        const dismissUpgradeBtn = document.getElementById('dismissUpgrade');
+        const videoContainer = document.getElementById('videoContainer');
+        const videoFrame = document.getElementById('videoFrame');
+        const videoTitle = document.getElementById('videoTitle');
+        const videoDescription = document.getElementById('videoDescription');
+        const messageContainer = document.getElementById('messageContainer');
+
+        // List of available topics
+        const availableTopics = ['organic', 'inorganic', 'physical'];
+        
+        // Topic-specific keywords to validate video content
+        const topicKeywords = {
+            organic: ["organic chemistry", "carbon compounds", "functional groups", "synthesis", "reaction mechanisms", "stereochemistry", "alkanes", "alkenes", "alkynes", "aromatic compounds"],
+            inorganic: ["inorganic chemistry", "transition metals", "coordination compounds", "main group elements", "crystal structures", "periodic trends", "acids and bases", "redox reactions", "metal complexes", "solid state chemistry"],
+            physical: ["physical chemistry", "thermodynamics", "kinetics", "quantum chemistry", "spectroscopy", "electrochemistry", "phase equilibria", "chemical equilibrium", "statistical mechanics", "surface chemistry"]
+        };
+
+        // Initialize event listeners
+        function init() {
+            // Topic selection
+            topicSelect.addEventListener('change', handleTopicSelect);
+
+            // Handle unavailable topics
+            topicSelect.addEventListener('mousedown', function(e) {
+                const option = e.target.closest('option');
+                if (option && option.classList.contains('option-unavailable')) {
+                    e.preventDefault();
+                    showUpgradeMessage();
+                }
+            });
+
+            // Load video button
+            loadVideoBtn.addEventListener('click', handleLoadVideo);
+
+            // Dismiss upgrade message
+            dismissUpgradeBtn.addEventListener('click', function() {
+                upgradeMessage.style.display = 'none';
+            });
+        }
+
+        // Handle topic selection
+        function handleTopicSelect(e) {
+            const selectedTopic = e.target.value;
+            
+            if (availableTopics.includes(selectedTopic)) {
+                inputContainer.style.display = 'block';
+                upgradeMessage.style.display = 'none';
+                videoContainer.style.display = 'none';
+                showMessage('', 'none');
+            } else {
+                inputContainer.style.display = 'none';
+                showUpgradeMessage();
+            }
+        }
+
+        // Show upgrade message
+        function showUpgradeMessage() {
+            upgradeMessage.style.display = 'block';
+            inputContainer.style.display = 'none';
+            videoContainer.style.display = 'none';
+        }
+
+        // Handle loading the video
+        function handleLoadVideo() {
+            const videoUrl = videoUrlInput.value.trim();
+            const selectedTopic = topicSelect.value;
+            
+            if (!videoUrl) {
+                showMessage('Please enter a YouTube video URL', 'error');
+                return;
+            }
+            
+            // Extract video ID from different types of YouTube URLs
+            const videoId = extractVideoId(videoUrl);
+            
+            if (!videoId) {
+                showMessage('Invalid YouTube URL. Please enter a valid URL', 'error');
+                return;
+            }
+            
+            // For a real application, you would verify the video topic using YouTube API
+            // Here we'll simulate topic verification
+            verifyVideoTopic(videoId, selectedTopic);
+        }
+
+        // Extract video ID from YouTube URL
+        function extractVideoId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // Verify if video matches selected topic (simulated)
+        function verifyVideoTopic(videoId, topic) {
+            // In a real application, you would use YouTube API to get video details
+            // and verify that it matches the topic using tags, description, etc.
+            
+            // For demo purposes, we'll just load the video and assume it's appropriate
+            loadVideo(videoId, topic);
+        }
+
+        // Load the video into the iframe
+        function loadVideo(videoId, topic) {
+            // Create embed URL
+            const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            
+            // Update iframe
+            videoFrame.src = embedUrl;
+            
+            // Set some topic-specific details
+            let title, description;
+            
+            switch(topic) {
+                case 'organic':
+                    title = "Organic Chemistry Principles";
+                    description = "Explore the chemistry of carbon compounds, including structure, properties, reactions, and synthesis of organic molecules that form the basis of life and many industrial products.";
+                    break;
+                case 'inorganic':
+                    title = "Inorganic Chemistry Explained";
+                    description = "Learn about the properties and reactions of all elements and compounds except carbon-based compounds, including metals, minerals, and organometallic compounds.";
+                    break;
+                case 'physical':
+                    title = "Physical Chemistry Concepts";
+                    description = "Study the fundamental principles that govern chemical systems, including thermodynamics, kinetics, quantum mechanics, and the relationship between structure and properties.";
+                    break;
+                default:
+                    title = "Chemistry Tutorial";
+                    description = "Educational content for chemistry students and professionals.";
+            }
+            
+            videoTitle.textContent = title;
+            videoDescription.textContent = description;
+            
+            // Show video container
+            videoContainer.style.display = 'block';
+            showMessage(`Successfully loaded ${getTopicName(topic)} video!`, 'success');
+        }
+
+        // Helper function to get full topic name
+        function getTopicName(topicCode) {
+            const topicNames = {
+                'organic': 'Organic Chemistry',
+                'inorganic': 'Inorganic Chemistry',
+                'physical': 'Physical Chemistry'
+            };
+            
+            return topicNames[topicCode] || topicCode;
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            if (!message) {
+                messageContainer.style.display = 'none';
+                return;
+            }
+            
+            messageContainer.textContent = message;
+            messageContainer.className = 'message';
+            
+            if (type) {
+                messageContainer.classList.add(type);
+            }
+            
+            messageContainer.style.display = 'block';
+        }
+
+        // Initialize the application
+        init();
+    </script>
 </body>
 </html>
